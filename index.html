@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Laser Animation</title>
+	<script src="animation.js" type="text/javascript"></script>
+	<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+	<link rel="stylesheet" href="style.css">
+	<script src="https://code.jscharting.com/2.9.0/jscharting.js"></script>
+	<script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body style="margin:0px;">
+	<script type="text/javascript">
+		var windowwidth = window.innerWidth;
+		var windowheight = window.innerHeight;
+		console.log('Browsergröße:' + windowheight + ' ' + windowwidth);
+		var scaleFactor=1.0;
+
+		// document.body.onload = addCanvas;
+		// function addCanvas() {
+		  var C1 = document.createElement("canvas");
+		  C1.id="AC";
+		  C1.width=windowwidth/scaleFactor;
+		  C1.height=windowheight/scaleFactor;
+		  C1.style="background: #ddd; position: absolute; left: 0; top: 0; z-index: 0;";
+		  document.body.appendChild(C1);
+
+		  var C2 = document.createElement("canvas");
+		  C2.id="AC2";
+		  C2.width=windowwidth/scaleFactor;
+		  C2.height=windowheight/scaleFactor;
+		  C2.style="position: absolute; left: 0; top: 0; z-index: 1;";
+	  	  document.body.appendChild(C2);
+
+	  	var C3 = document.createElement("canvas");
+		  C3.id="AC3";
+		  C3.width=windowwidth/scaleFactor;
+		  C3.height=windowheight/scaleFactor;
+		  C3.style="position: absolute; left: 0; top: 0; z-index: 2; opacity: 0.9";
+	  	document.body.appendChild(C3);
+
+	  	var C4 = document.createElement("canvas");
+		  C4.id="AC4";
+		  C4.width=windowwidth/scaleFactor;
+		  C4.height=windowheight/scaleFactor;
+		  C4.style="position: absolute; left: 0; top: 0; z-index: 3; opacity: 0.7";
+	  	document.body.appendChild(C4);
+
+	  	var C5 = document.createElement("canvas");
+		  C5.id="AC5";
+		  C5.width=windowwidth/scaleFactor;
+		  C5.height=windowheight/scaleFactor;
+		  C5.style="position: absolute; left: 0; top: 0; z-index: 4; opacity: 0.4";
+	  	document.body.appendChild(C5);
+
+	  	var C6 = document.createElement("canvas");
+		  C6.id="AC6";
+		  C6.width=windowwidth/scaleFactor;
+		  C6.height=windowheight/scaleFactor;
+		  C6.style="position: absolute; left: 0; top: 0; z-index: 5; opacity: 1";
+	  	document.body.appendChild(C6);
+
+	  	var C7 = document.createElement("canvas");
+		  C7.id="AC7";
+		  C7.width=windowwidth/scaleFactor;
+		  C7.height=windowheight/scaleFactor;
+		  C7.style="position: absolute; left: 0; top: 0; z-index: 6; opacity: 1";
+	  	document.body.appendChild(C7);
+
+	  	var C8 = document.createElement("canvas");
+		  C8.id="AC8";
+		  C8.width=windowwidth/scaleFactor;
+		  C8.height=windowheight/scaleFactor;
+		  C8.style="position: absolute; left: 0; top: 0; z-index: 7; opacity: 1";
+	  	document.body.appendChild(C8);
+
+	  	var C9 = document.createElement("canvas");
+		  C9.id="AC9";
+		  C9.width=windowwidth/scaleFactor;
+		  C9.height=windowheight/scaleFactor;
+		  C9.style="position: absolute; left: 0; top: 0; z-index: 8; opacity: 1";
+	  	document.body.appendChild(C9);
+
+	  	var C20 = document.createElement("canvas");
+		  C20.id="AC20";
+		  C20.width=windowwidth/scaleFactor;
+		  C20.height=windowheight/scaleFactor;
+		  C20.style="position: absolute; left: 0; top: 0; z-index: 19; opacity: 1";
+	  	document.body.appendChild(C20);
+
+		  var Obj = new Array();
+  		var item = new Array();
+		  var cavity = new Array();
+		  var C = 0;
+		  var H = windowheight;
+		  var W = windowwidth;
+		  var pumpq = 0;
+		  var ctx = 0;
+		  var ctx2 = 0;
+		  var ctx3 = 0;
+		  var actObj = 0;
+		  var actIndex = 0; //index ob Obj >> Obj[actIndex]
+		  var clippingRadiusY = 100;
+		  var lmediumInMirrorOffset = 8;
+		  var rayOutOfCavity = 130; //90 is a good value (height of mirrors)
+		  var opticalAxisLength = 0;
+		  var rayTrace = new Array();
+		  var beam = math.matrix([[10],[0],[0],[1]]);
+		  var gaussRayTrace = new Array();
+		  var rulerBaseY = H*5/12; // Y- Position of Ruler
+		  //Function defined in animation.js
+		  var toggleDiagram = 0;
+		  var singleRayPropCycles = 6000;
+		  construct();
+		//}
+	</script>
+
+	<div class="range">
+		<h3>Radius: Linker Spiegel</h3>
+     <div class="sliderValue">
+        <span id="range-span-l">0</span>
+      </div>
+      <div class="field">
+        <div class="value left">-100</div>
+        <input id= "range-input-l" type="range" min="-100" max="500" value="100" steps="1">
+        <div class="value right">+500</div>
+      </div>
+   </div>
+
+  <!-- <div id="chartDiv" style="width:50%; height:300px; margin:0 auto; z-index: 300; background: #111;"></div> -->
+  <div id="plot-wrapper" style="z-index: 200; top: 0; position: absolute; background: #555; padding: 20px; color: #eee">
+  	<p>Stabilitätsdiagramm <i class="arrow right"></i></p></div>
+  <div id='plotlyDiv' class="hide"> <i class="fa-sharp fa-solid fa-arrows-rotate" id="switch-dia" style="font-size: 20px; position: absolute; top: 15px; left: 15px; cursor: pointer;"></i><!-- Plotly chart will be drawn inside this DIV --></div>
+
+
+
+   <div class="row">
+	    <div class="hamburg checked">
+	        <span class="line"></span>
+	        <span class="line"></span>
+	        <span class="line"></span>
+	    </div>
+	</div>
+  <form class="tools">
+  	
+  	<h1>Einstellungen</h1>
+	  <div>
+	    <input type="checkbox" id="display-label-roc" name="subscribe" value="label-roc" />
+	    <label for="display-label-roc">Radien in mm anzeigen</label>
+	  </div>
+	  <div>
+	    <input type="checkbox" id="display-focus" name="focus" value="focus" />
+	    <label for="display-focus">Spiegelradien anzeigen </label>
+	  </div>  
+	  <div>
+	    <input type="checkbox" id="abs-position" name="abs" value="focus" />
+	    <label for="abs-position">Lineal: Absolute Position </label>
+	  </div>
+	  <div>
+	    <input type="checkbox" id="rel-position" name="rel" value="focus" />
+	    <label for="rel-position">Lineal: Relative Position </label>
+	  </div>
+	  <div>
+	    <button id="auto-align">automatisch platzieren</button>
+	  </div>
+	  <div>
+	    <button id="single-ray">Einzelstrahl starten</button> <button id="clear-l8">reset</button>
+	  </div>		
+	</form>
+
+	<div class="row">
+	    <div class="hamburg2 checked">
+	        <span class="line"></span>
+	        <span class="line"></span>
+	        <span class="line"></span>
+	    </div>
+	</div>
+	<form class="tools-2">
+  	<h1>Laser Parameter</h1>
+	  <div><label for="wavelength">Wellenlänge in nm </label> <input type="text" id="lambda" name="wavelength" value="635" /></div>
+	  <div><label for="beamwaist">Strahltaille in mm</label> <input class="disable" type="text" id="omega0" name="beamwaist" value="0.5" /></div>
+	  <div><label for="gaussscalefactor">Skalierungsfaktor</label> <input type="text" id="gaussscalefactor" name="gaussscalefactor" value="500" /></div>
+	   <input type="checkbox" id="updategauss" name="rel" value="gauss" />
+	    <label for="updategauss">Gauß-Strahl anzeigen </label>
+	   <input type="checkbox" id="show-waist" name="show-waist" value="waist" />
+	    <label for="show-waist">Charakteristische Punkte </label>
+ </form>
+
+<script src="slider.js" type="text/javascript"></script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+*{
+  margin:0;
+  padding:0;
+  font-family: 'Arial', sans-serif;
+}
+html, body{
+  display:grid;
+  height:100%;
+  text-align:center;
+  place-items:center;
+  background:#333;
+}
+.range{
+  height: 120px;
+  /*width: 180px;*/
+  background:#fff;
+  border-radius: 10px;
+  padding: 15px 65px 0 45px;
+  z-index: 1000;
+  position: absolute;
+  top:80%;
+  left: 27.5%;
+}
+.range .sliderValue{
+  position:relative;
+  width:100%;
+}
+.range .sliderValue span{
+  position: absolute;
+  height:45px;
+  width:180px;
+  color: white;
+  font-weight: 500;
+  top: -40px;
+  transform: translateX(-33%) scale(0);
+  transform-origin: bottom;
+  transition: transform 0.3s ease-in-out;
+  line-height: 55px;
+  z-index: 2;
+}
+.range .sliderValue span.show{
+  transform: translateX(-33%) scale(1);
+}
+.range .sliderValue span:after{
+  position: absolute;
+  content: "";
+  height:45px;
+  width:45px;
+  background: red;
+  left:50%;
+  transform: translateX(-50%) rotate(45deg);
+  border:solid 3px #fff;
+  z-index: -1;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+  border-bottom-left-radius: 50%;
+}
+.range .field{
+  position:relative;
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.range .field .value{
+  position:absolute;
+  font-size:20px;
+  font-weight:600;
+  color: black;
+}
+.range .field .value.left{
+  left: -22px;
+}
+.range .field .value.right{
+  right: -43px;
+}
+.range .field input{
+  -webkit-appearance: none;
+  height:3px;
+  background:#ddd;
+  border-radius: 5px;
+  outline:none;
+  border:none;
+  width:100%;
+}
+.range .field input::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  background: black;
+  border-radius: 50%;
+  border: 1px solid #664AFF;
+  cursor: pointer;
+}
+
+.tools {
+  right: 0px;
+  top:0px;
+  padding: 50px 70px 40px 40px;
+  position: absolute;
+  display: inline-block;
+  text-align: left;
+  z-index: 100;
+  background: #fefefe;
+  border-radius: 0px 0px 0px 45px;
+  transform-origin: right;
+  transition: transform 0.4s ease-in-out;
+}
+.tools div, .tools-2 div {
+  padding-top: 10px;
+}
+
+.tools.hide, .tools-2.hide {
+  transform: translateX(100%) scale(0.8);
+  /*display: none;*/
+  /*right: -500px;*/
+}
+
+.tools-2 {
+  right: 0px;
+  bottom:0px;
+  padding: 50px 70px 40px 40px;
+  position: absolute;
+  display: inline-block;
+  text-align: left;
+  z-index: 100;
+  background: #fefefe;
+  border-radius: 45px 0px 0px 0px;
+  transition: transform 0.4s ease-in-out;
+}
+.tools-2 input[type="text"]{
+  border: none;
+  border-bottom: 1px solid #999;
+  width: 60px;
+  text-align: center;
+  font-size:20px;
+}
+input[type="text"].disable {
+  cursor: not-allowed;
+  color: #666;
+}
+
+label {
+    font-size:20px;
+}
+
+button {
+  padding: 10px 20px;
+  border-radius: 13px;
+  border: none;
+  background: #d8f6ff;
+  font-size: 20px;
+}
+
+button:hover {
+  background: #a4e1f4;
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+[type="checkbox"] {
+  position: relative;
+  left: 30px;
+  top: 0px;
+  z-index: 0;
+  -webkit-appearance: none;
+}
+[type="checkbox"] + label {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 20px;
+  line-height: 1.4;
+  padding-left:70px;
+  position: relative;
+  margin-top: -10px;
+}
+[type="checkbox"] + label:before {
+  width: 60px;
+  height: 30px;
+  border-radius: 30px;
+  border: 2px solid #ddd;
+  background-color: #EEE;
+  content: "";
+  margin-right: 15px;
+  transition: background-color 0.2s linear;
+  z-index: 5;
+  position: absolute;
+  left: 0px;
+}
+[type="checkbox"] + label:after {
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  background-color: #fff;
+  content: "";
+  transition: margin 0.1s linear;
+  box-shadow: 0px 0px 5px #aaa;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  z-index: 10;
+}
+[type="checkbox"]:checked + label:before {
+  background-color: #a4e1f4;
+}
+[type="checkbox"]:checked + label:after {
+  margin: 0 0 0 30px;
+}
+
+
+.hamburg { 
+   display: block;
+   background: #555; width: 75px; height: 50px; 
+   position: absolute; 
+   top: 10px;
+   right: 10px;
+   margin-left: auto; margin-right: auto;
+   border-radius: 4px; 
+   transition: border-radius .5s;
+   z-index: 300;
+   cursor: pointer;
+}
+
+.hamburg2 { 
+   display: block;
+   background: #555; width: 75px; height: 50px; 
+   position: absolute; 
+   bottom: 10px;
+   right: 10px;
+   margin-left: auto; margin-right: auto;
+   border-radius: 4px; 
+   transition: border-radius .5s;
+   z-index: 300;
+   cursor: pointer;
+}
+.line { 
+   position: absolute; 
+   left:10px;
+   height: 4px; width: 55px; 
+   background: #fff; border-radius: 2px;
+   display: block; 
+   transition: 0.5s; 
+   transform-origin: center; 
+}
+
+.line:nth-child(1) { top: 12px; }
+.line:nth-child(2) { top: 24px; }
+.line:nth-child(3) { top: 36px; }
+
+.hamburg.checked .line:nth-child(1), .hamburg2.checked .line:nth-child(1){
+   transform: translateY(12px) rotate(-45deg);
+}
+
+.hamburg.checked .line:nth-child(2), .hamburg2.checked .line:nth-child(2){
+   opacity:0;
+}
+
+.hamburg.checked .line:nth-child(3), .hamburg2.checked .line:nth-child(3){
+   transform: translateY(-12px) rotate(45deg);
+}
+
+.arrow {
+  border: solid #eee;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.down {
+  transform: rotate(45deg) !important;
+  -webkit-transform: rotate(45deg) !important;
+}
+
+#plotlyDiv {
+  z-index: 199; 
+  position: relative;
+  transform: translateY(-20%);
+  transition: 0.5s; 
+}
+
+#plotlyDiv.hide{
+  transform: translateY(-150%) scale(0.3);
+}
+
+@media (max-width: 1800px) {
+  h1 {
+    font-size: 1.2em;
+  }
+  .tools, .tools-2 {
+    padding: 10px;
+  }
+  .tools {
+     border-radius: 0px 0px 0px 15px;
+  }
+  .tools-2{
+      border-radius: 15px 0px 0px 0px;
+  }
+  h3{
+    font-size: 0.9em;
+  }
+  .range .field .value{
+    font-size: 12px;
+  }
+  .range .field .value.right {
+    right: -32px;
+  }
+  .range .field {
+    height: 50%;
+  }
+  .range {
+    height: 70px;
+    padding: 15px 40px 0px 40px;
+  }
+  .hamburg, .hamburg2{
+    width: 35px;
+    height: 30px;
+  }
+  .line{
+    width: 15px;
+    height: 2px;
+  }
+  .line:nth-child(3){
+    top: 26px;
+  }
+  .line:nth-child(1) {
+    top: 2px;
+  } 
+  .line:nth-child(2) {
+    top: 14px;
+  }
+  label, [type="checkbox"] + label {
+    font-size: 12px;
+    padding-left: 30px;
+  }
+  [type="checkbox"] + label:after {
+    width: 10px;
+    height: 10px;
+  }
+  [type="checkbox"] + label:before {
+    width: 20px;
+    height: 10px;
+  }
+  .tools-2 input[type="text"]{
+    font-size: 12px;
+  }
+  button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  [type="checkbox"]:checked + label:after {
+    margin: 0 0 0 10px;
+}
+.tools div, .tools-2 div {
+    padding-top: 3px;
+}
+  
+
+}
+
+#AC20 {
+  touch-action: none;
+}
+
