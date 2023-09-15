@@ -1,3 +1,6 @@
+
+console.log('test');
+
 const sliderValueL = document.getElementById("range-span-l");
 const inputSliderL = document.getElementById("range-input-l");
 inputSliderL.oninput = function(){
