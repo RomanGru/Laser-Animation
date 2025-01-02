@@ -13,6 +13,7 @@ function construct(){
   C11 = document.getElementById("AC11");  //layer 11: Laser dot on screen
   C20 = document.getElementById("AC20");  //layer 20: for Eventhandler
 
+  //test
 
   if (W != 1920 || H < 900 || H > 1400) {
     window.alert("Die Animation ist aktuell nur für ein Bildschirm in Full HD (1920x1080 Pixel) optimiert. Die Animation sieht ggf. verschoben aus. Sie kann trotzdem verwendet werden.");
