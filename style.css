@@ -19,7 +19,7 @@ html, body{
   z-index: 1000;
   position: absolute;
   top:80%;
-  left: 27.5%;
+  left: 15%;
 }
 .range .sliderValue{
   position:relative;

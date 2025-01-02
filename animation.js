@@ -9,6 +9,8 @@ function construct(){
   C7 = document.getElementById("AC7");  //layer 7: lineal & positions
   C8 = document.getElementById("AC8");  //layer 8: single ray
   C9 = document.getElementById("AC9");  //layer 9: laserpointer
+  C10 = document.getElementById("AC10");  //layer 10: Laser intensity
+  C11 = document.getElementById("AC11");  //layer 11: Laser dot on screen
   C20 = document.getElementById("AC20");  //layer 20: for Eventhandler
 
 
@@ -25,6 +27,8 @@ function construct(){
   ctx7 = C7.getContext("2d");
   ctx8 = C8.getContext("2d");
   ctx9 = C9.getContext("2d");
+  ctx10 = C10.getContext("2d");
+  ctx11 = C11.getContext("2d");
   ctx20 = C20.getContext("2d");
 
 
@@ -35,7 +39,7 @@ function construct(){
 
   opticalAxisLength = W*2/3;
   ctx3.font = "18px Arial";
-  ctx3.fillText(("Version 0.6"), W/6,H/2-280);
+  ctx3.fillText(("Version 0.7"), W/6,H/2-280);
   ctx3.font = "24px Arial";
   ctx3.fillText(("Aufbau eines Laserresonators"), W/6,H/2-250);   
   ctx3.fillText(("Länge der optischen Achse: "+ math.round(opticalAxisLength) + " mm"), W/6,H/2-200);
@@ -67,7 +71,7 @@ function construct(){
       "length" : 59
     },
     "pump" : 0,
-    "lambda" : 600
+    "lambda" : 635
   };
 }
 
@@ -98,13 +102,14 @@ function addObject(pathArr = [], layer = 1, type = 'mirror',
     else if (layer == 8) {ctx8.drawImage(im, x,y, im.width, im.height);}
     else if (layer == 9) {ctx9.drawImage(im, x,y, im.width, im.height);}
     else if (layer == 10) {ctx10.drawImage(im, x,y, im.width, im.height);}
+    else if (layer == 11) {ctx11.drawImage(im, x,y, im.width, im.height);}
     let item = {
         "x": x,
         "y": y,
         "w": im.width,
         "h": im.height,
         "z": layer,
-        "type": type, //mirrorL, pumpsource, powermeter
+        "type": type, //mirrorL, pumpsource, powermeter, none
         "interaction": interaction, //click
         "state": state, // 0, 1, 2 ...
         "url": pathArr
@@ -550,7 +555,7 @@ function clearRayLayer(event = false){
     clearLayer(8);
 }
 
-function calcBeamParam(event = false, showRay = true){
+function calcBeamParam(event = false, showRay = true, returnVal = false){
   if (event != false) {
     event.preventDefault();
   }
@@ -620,13 +625,32 @@ function calcBeamParam(event = false, showRay = true){
     } else if (cavity.mleft.roc == 0) {
       posOfWaist = 0; 
     }
+    for (var i = cavity.mright.position-cavity.mleft.position - 1; i >= 0; i--) {
+      omega = omegaNull**2 * (1+((i-posOfWaist)/z0)**2);
+      gaussRayTrace.unshift([i+offs,H/2-math.round(omega*scaleFac)],[i+offs,H/2+math.round(omega*scaleFac)]);
+    }
     if (showRay) {
-      for (var i = cavity.mright.position-cavity.mleft.position - 1; i >= 0; i--) {
-        omega = omegaNull**2 * (1+((i-posOfWaist)/z0)**2);
-        gaussRayTrace.unshift([i+offs,H/2-math.round(omega*scaleFac)],[i+offs,H/2+math.round(omega*scaleFac)]);
-      }
       point(false,false,gaussRayTrace,0,math.round(lam*10**6));
     } 
+
+    if (returnVal) { //gives minimal Beam Waist with respect to Lasermedium by cycling throu Beam array and finds the minimal point
+      let p = cavity.lmedium.position;
+      let l = cavity.lmedium.length;
+      let d = 100000;
+          //HIER LIEGT DER HUND BEGRABEN ..... ->>>>>>>>>>>>>>>>>
+      for (var i = gaussRayTrace.length - 1; i >= 0; i--) {
+        if (gaussRayTrace[i][0] >= p && gaussRayTrace[i][0] <= (p+l)) {
+          if(math.abs(gaussRayTrace[i][1] - H/2)*2/scaleFac < d) {
+            d = math.abs(gaussRayTrace[i][1] - H/2)*2/scaleFac;
+          }
+        } 
+      }
+      if (returnVal > 1) { // gives more values with respekt to the 3 positions left, middle, right of the lasermedium
+
+      } else { //returns single value (as usual)
+        return d;
+      }
+    }
 
     let rMax = 2 * z0;
     return [omegaNull,posOfWaist,z0,offs,rMax];
@@ -635,6 +659,32 @@ function calcBeamParam(event = false, showRay = true){
     clearLayer(8);
     return false;
   }
+}
+
+function laserIntensity(){
+  clearLayer(10);
+  // nur wenn ausgewählt ist, dass Intensität angezeigt werden soll
+  if (document.getElementById("laserintensity").checked == true) { 
+    if (cavity.pump == 1) {
+      let d = calcBeamParam(false,false,true);
+      let I = 0;
+      if (d) {
+        I = getIntensity(d);
+      }
+      let str = "Laserintensität: " + I + "%";
+      ctx10.font = "24px Arial";
+      ctx10.fillText((str), W*5/6,H/2-100); 
+    } 
+  } 
+}
+
+function getIntensity(d = 1){
+  let I = 0;
+  if (d > minLaserRadius) {
+    I = math.ceil((minLaserRadius / d)**2 * 100);
+  } else {
+    I = 100;
+  } return I;
 }
 
 function showGauss(event = false){
@@ -735,9 +785,19 @@ function drawLayer(layer, boolean = false){ //boolean = true läd alle Elemente 
       } else {
         im.src = o.url[o.state];
         
-         context.drawImage(im, o.x, o.y, im.width, im.height);
+        im.onload = function(){
+          context.drawImage(im, o.x, o.y, im.width, im.height);
+        }      
       }
-    } else if(o.type == "screen") { //Update the screen with laserpoint
+      // im.onload = function() {
+      //     context.drawImage(im, o.x, o.y, o.w, o.h);  // Zeichne nur nach vollständigem Laden
+      // };
+      
+      // im.onerror = function() {
+      //     console.error(`Fehler beim Laden des Bildes: ${o.url[o.state]}`);
+      // };
+
+    } /*else if(o.type == "screen") {  //Update the screen with laserpoint
       clearLayer(6);
       let im = new Image();
       im.width = o.w;
@@ -753,12 +813,30 @@ function drawLayer(layer, boolean = false){ //boolean = true läd alle Elemente 
         } 
         im.src = o.url[0];
       }
-    }
+    }*/
   });
   if (layer == 3) {
       ctx3.moveTo(W/6, H/2);
       ctx3.lineTo((W-W/6), H/2);
       ctx3.stroke();
+  }
+}
+
+function redrawDot(){
+  let x = W*5/6+95;
+  let y = H/2+3
+  let ctx = clearLayer(11); 
+  if (isLasing()){
+     let hex = rgbToHex(nmToRGB(cavity.lambda));
+    let gradient = ctx.createRadialGradient(x, y, 6, x, y, 13);
+    gradient.addColorStop(0, hex);
+    gradient.addColorStop(1, hex + '00');
+    ctx.beginPath();
+    ctx.arc(x, y, 13, 0, 2* Math.PI, false);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    let op = math.sqrt((getIntensity(calcBeamParam(false,false,true)))/100);
+    document.getElementById("AC11").style.opacity = op;
   }
 }
 
@@ -817,6 +895,7 @@ function canObjectMove(x,y){
           cavity.pump = 1;
           Obj[findObjectInArray("lmedium")].state = 1;
           drawLayer(2, true);
+          redrawDot();
           return false;
         }
 
@@ -824,6 +903,7 @@ function canObjectMove(x,y){
         if (Ob.type == "pumpsource") {
           updateObjectState(0,index);
           cavity.pump = 0;
+          laserIntensity(); //delete Text of laserIntensity
           Obj[findObjectInArray("lmedium")].state = 0;
           drawLayer(2, true);
           return false;
@@ -869,15 +949,6 @@ window.onload = function() {
   }
 
   function handleMouseUp(e,type){
-    // if (type == "m") {
-    //   canMouseX=parseInt(e.clientX-offsetX);
-    //   canMouseY=parseInt(e.clientY-offsetY);
-    // } else if (type =="t") {
-    //   canMouseX=parseInt(e.touches[0].clientX-offsetX);
-    //   canMouseY=parseInt(e.touches[0].clientY-offsetY);
-    // }
-    
-
     // clear the drag flag
     isDragging=false;
   }
@@ -912,13 +983,16 @@ window.onload = function() {
       C20.style.cursor = "default";
     }
     // if the drag flag is set, clear the canvas and draw the image
-    if(isDragging){
+
+    if(isDragging){ //all functions that should fire on dragging
         updateObjectPosition(parseInt(canMouseX), parseInt(canMouseY), actIndex);
         drawLayer(actObj.z);
+        redrawDot();
         labelRoc();
         displayFocus();
         absolutePosition();
         relativePosition();
+        laserIntensity();
         if (document.getElementById("updategauss").checked == true) {
           calcBeamParam();
         }
@@ -956,32 +1030,36 @@ window.onload = function() {
   document.getElementById("updategauss").addEventListener("change", function(e){showGauss(e);});
   document.getElementById("show-waist").addEventListener("change", function(e){showWaist(e);});
 
-  if (W > H && H > 1000) {
+  if (W > H && H > 1000) { // Full-HD & größer
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*11/24,H*18/24);
-    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, W*2/24,H*19/24);
-    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H*19/24);
+    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
+    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70);
-    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H*20/24);
-    addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*18/24);
+    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
+    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*18/24);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
-  } else if (W > H && (H > 700 && W > 1200)) {
+  } else if (W > H && (H > 700 && W > 1200)) { // kleiner Bildschirm - Landscape
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
-    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, W*2/24,H*18/24);
-    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H*18/24);
+    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
+    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
-    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H*20/24);
-    addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*19/24, 0.7);
+    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
+    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*19/24, 0.7);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
-  } else if(W > H && (H > 700 && W < 1200)){
+  } else if(W > H && (H > 700 && W < 1200)){ // 4:3 Bildschirm bspw.
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
     addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, W*2/24,H*18/24);
     addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H*18/24);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H*22/24);
-    addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*20/24, 0.5);
+    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*20/24, 0.5);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
   }
+
   //add Objects to Canvas
+  setTimeout(function() {
+  // Code, der erst nach 2 Sekunden ausgeführt wird
+        autopAlign(false);
+  }, 500);
   
 }
-
