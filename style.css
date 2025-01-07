@@ -19,7 +19,7 @@ html, body{
   z-index: 1000;
   position: absolute;
   top:80%;
-  left: 15%;
+  left: 5%;
 }
 .range .sliderValue{
   position:relative;
@@ -103,16 +103,38 @@ html, body{
   z-index: 100;
   background: #fefefe;
   border-radius: 0px 0px 0px 45px;
-  transform-origin: right;
-  transition: transform 0.4s ease-in-out;
+ -webkit-animation: fadeInFromNone 1s ease-out;
+    -moz-animation: fadeInFromNone 1s ease-out;
+    -o-animation: fadeInFromNone 1s ease-out;
+    animation: fadeInFromNone 1s ease-out;
 }
+
+@keyframes fadeInFromNone {
+    0% {
+        display: none;
+        opacity: 0;
+    }
+
+    1% {
+        display: block;
+        opacity: 0;
+    }
+
+    100% {
+        display: block;
+        opacity: 1;
+    }
+}
+
+
 .tools div, .tools-2 div {
   padding-top: 10px;
 }
 
-.tools.hide, .tools-2.hide {
-  transform: translateX(100%) scale(0.8);
-  /*display: none;*/
+.tools.hide, .tools-2.hide, .hide {
+/*  transform: translateX(100%) scale(0.8);*/
+  display: none;
+  opacity: 0;
   /*right: -500px;*/
 }
 
@@ -126,8 +148,12 @@ html, body{
   z-index: 100;
   background: #fefefe;
   border-radius: 45px 0px 0px 0px;
-  transition: transform 0.4s ease-in-out;
+-webkit-animation: fadeInFromNone 1s ease-out;
+    -moz-animation: fadeInFromNone 1s ease-out;
+    -o-animation: fadeInFromNone 1s ease-out;
+    animation: fadeInFromNone 1s ease-out;
 }
+
 .tools-2 input[type="text"]{
   border: none;
   border-bottom: 1px solid #999;

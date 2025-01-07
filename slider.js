@@ -21,9 +21,13 @@ inputSliderL.oninput = function(){
       }
       labelRoc();
       displayFocus();
+      redrawDot();
       if (document.getElementById("updategauss").checked == true) {
           calcBeamParam();
         }
+       if (document.getElementById("laserintensity").checked == true) {
+          laserIntensity();
+        } 
       if (toggleDiagram === 0) {
           let g12 = isLasing(true, true,true);
           redrawStabilityGPlot(g12[0],g12[1]);

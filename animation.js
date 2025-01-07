@@ -12,12 +12,6 @@ function construct(){
   C10 = document.getElementById("AC10");  //layer 10: Laser intensity
   C11 = document.getElementById("AC11");  //layer 11: Laser dot on screen
   C20 = document.getElementById("AC20");  //layer 20: for Eventhandler
-
-  //test
-
-  if (W != 1920 || H < 900 || H > 1400) {
-    window.alert("Die Animation ist aktuell nur für ein Bildschirm in Full HD (1920x1080 Pixel) optimiert. Die Animation sieht ggf. verschoben aus. Sie kann trotzdem verwendet werden.");
-  }
 	
 	ctx = C.getContext("2d");
   ctx2 = C2.getContext("2d");
@@ -32,18 +26,7 @@ function construct(){
   ctx11 = C11.getContext("2d");
   ctx20 = C20.getContext("2d");
 
-
-	ctx3.moveTo(W/6, H/2);
-	ctx3.lineTo((W-W/6), H/2);
-  ctx3.strokeStyle = "#75007620";
-	ctx3.stroke();
-
-  opticalAxisLength = W*2/3;
-  ctx3.font = "18px Arial";
-  ctx3.fillText(("Version 0.7"), W/6,H/2-280);
-  ctx3.font = "24px Arial";
-  ctx3.fillText(("Aufbau eines Laserresonators"), W/6,H/2-250);   
-  ctx3.fillText(("Länge der optischen Achse: "+ math.round(opticalAxisLength) + " mm"), W/6,H/2-200);
+  makeTitle(ctx3);
 
   let urlParam = new URLSearchParams(window.location.search);
   let rroc = 0;
@@ -52,18 +35,21 @@ function construct(){
   } else {
     rroc = 150;
   } 
+  if (urlParam.has('mode') && urlParam.get('mode')=="dark" ) {
+    document.getElementById("AC").style.background = "#333";
+  }
 
   cavity = {
     "mleft" : {
-      "position" : -1,
+      "position" : 50,
       "roc" : 100
       },
     "mright" : {
-      "position" : -1,
+      "position" : 50,
       "roc" : rroc
       },
     "lens" : {
-      "position" : -1,
+      "position" : 50,
       "f" : -50
       }, 
     "cavity" : 1280,
@@ -76,6 +62,38 @@ function construct(){
   };
 }
 
+function makeTitle(ctx){
+  //Versionsnummer: 
+  let version = "Version 0.8";
+
+  if (H < 700 && W < 1200 && W>H) {
+    window.alert("Die Animation ist aktuell nur für ein Bildschirm in Full HD (1920x1080 Pixel) im Querformat optimiert. Die Animation sieht ggf. verschoben aus.");
+  } else if (H>W) {
+    window.alert("Bitte das Tablet in Querformat drehen.");
+
+  }
+  ctx.moveTo(W/6, H/2);
+  ctx.lineTo((W-W/6), H/2);
+  ctx.strokeStyle = "#75007620";
+  ctx.stroke();
+
+  opticalAxisLength = W*2/3;
+  if (H < 700 && W < 1200 || H>W) { //für Tablets 
+    ctx.font = "8px Arial";
+    ctx.fillText((version), W/6,H/5);
+    ctx.font = "14px Arial";
+    ctx.fillText(("Aufbau eines Laserresonators"), W/6,H/5+15);   
+    ctx.fillText(("Länge der optischen Achse: "+ math.round(opticalAxisLength) + " mm"), W/6,H/5+35);
+  
+  } else { //für Full-HD
+    ctx.font = "18px Arial";
+    ctx.fillText((version), W/6,H/2-280);
+    ctx.font = "24px Arial";
+    ctx.fillText(("Aufbau eines Laserresonators"), W/6,H/2-250);   
+    ctx.fillText(("Länge der optischen Achse: "+ math.round(opticalAxisLength) + " mm"), W/6,H/2-200);
+  }
+
+}
 
 
 function addObject(pathArr = [], layer = 1, type = 'mirror', 
@@ -673,8 +691,14 @@ function laserIntensity(){
         I = getIntensity(d);
       }
       let str = "Laserintensität: " + I + "%";
-      ctx10.font = "24px Arial";
-      ctx10.fillText((str), W*5/6,H/2-100); 
+      if ((W < 1200)) {
+        // Adjustment for smaller Screens
+        ctx10.font = "14px Arial";
+        ctx10.fillText((str), W*5/6-10,H/2-70);
+      } else {
+        ctx10.font = "24px Arial";
+        ctx10.fillText((str), W*5/6,H/2-100);
+      }
     } 
   } 
 }
@@ -825,7 +849,11 @@ function drawLayer(layer, boolean = false){ //boolean = true läd alle Elemente 
 
 function redrawDot(){
   let x = W*5/6+95;
-  let y = H/2+3
+  let y = H/2+1
+  if ((W < 1200)) {
+    // Adjustment for smaller Screens
+    x=W*5/6+57;
+  } 
   let ctx = clearLayer(11); 
   if (isLasing()){
      let hex = rgbToHex(nmToRGB(cavity.lambda));
@@ -907,6 +935,7 @@ function canObjectMove(x,y){
           laserIntensity(); //delete Text of laserIntensity
           Obj[findObjectInArray("lmedium")].state = 0;
           drawLayer(2, true);
+          clearLayer(11); 
           return false;
         } else if(Ob.type == "laserpointer") {
           setTimeout(function() {updateObjectState(2,index);},10); //without timeout it goes in next condidtion
@@ -1031,13 +1060,12 @@ window.onload = function() {
   document.getElementById("updategauss").addEventListener("change", function(e){showGauss(e);});
   document.getElementById("show-waist").addEventListener("change", function(e){showWaist(e);});
 
-  if (W > H && H > 1000) { // Full-HD & größer
+  if (W > H && H > 1000 && W > 1200) { // Full-HD & größer
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*11/24,H*18/24);
     addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
     addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
-    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*18/24);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
   } else if (W > H && (H > 700 && W > 1200)) { // kleiner Bildschirm - Landscape
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
@@ -1045,7 +1073,6 @@ window.onload = function() {
     addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
-    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*19/24, 0.7);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
   } else if(W > H && (H > 700 && W < 1200)){ // 4:3 Bildschirm bspw.
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
@@ -1053,14 +1080,30 @@ window.onload = function() {
     addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H*18/24);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H*22/24);
-    //addObject(["gfx/collection.png"], 3, "collection", "none", 0, W*1/24,H*20/24, 0.5);
+    addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
+  } else if (W > H && (H < 700 && W < 1200)) { // Tablett
+    addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*18/24, 0.6);
+    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
+    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
+    addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+10,H/2-50, 0.6);
+    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
   }
-
+  // document.getElementsByClassName("tools-2")[0].classList.add("hide");
   //add Objects to Canvas
   setTimeout(function() {
   // Code, der erst nach 2 Sekunden ausgeführt wird
         autopAlign(false);
   }, 500);
-  
+
+  if (W<600) {
+    document.getElementById("plot-wrapper").classList.add("hide");
+  }
 }
+
+ window.onresize = function(){
+  setTimeout(function() {
+    // Code, der erst nach 2 Sekunden ausgeführt wird
+          window.location.reload();
+    }, 500);
+ }
