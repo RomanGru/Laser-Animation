@@ -1060,6 +1060,14 @@ window.onload = function() {
   document.getElementById("updategauss").addEventListener("change", function(e){showGauss(e);});
   document.getElementById("show-waist").addEventListener("change", function(e){showWaist(e);});
 
+  if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+    // true for mobile device
+    console.log("mobile device");
+  }else{
+    // false for not mobile device
+    console.log("not mobile device");
+  }
+
   if (W > H && H > 1000 && W > 1200) { // Full-HD & größer
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*11/24,H*18/24);
     addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
@@ -1067,19 +1075,19 @@ window.onload = function() {
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
-  } else if (W > H && (H > 700 && W > 1200)) { // kleiner Bildschirm - Landscape
+  } else if (W > H && (H > 700 || W > 1200)) { // kleiner Bildschirm - Landscape
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
     addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, (W/6+100),H/2);
     addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, (W/6+280),H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
     addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, (W/6+150),H/2);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
-  } else if(W > H && (H > 700 && W < 1200)){ // 4:3 Bildschirm bspw.
+  } else if(W < H){ // Hochformat
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*19/24, 0.6);
-    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, W*2/24,H*18/24);
-    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H*18/24);
+    addObject(["gfx/m-kk-l.png","gfx/m-p-l.png","gfx/m-kv-l.png"], 2, "mirrorL", "drag", 0, W*2/24,H/2);
+    addObject(["gfx/m-kk-r.png","gfx/m-p-r.png","gfx/m-kv-r.png"], 2, "mirrorR", "drag", 0, W*3/24,H/2);
     addObject(["gfx/screen-off.png","gfx/screen-on.png"], 6, "screen", "none", 0, W*5/6+20,H/2-70, 0.8);
-    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H*22/24);
+    addObject(["gfx/lasermedium-off.png","gfx/lasermedium-on.png"], 2, "lmedium", "drag", 0, W*4/24,H/2);
     addObject(["gfx/laserpointer-r.png","gfx/laserpointer-g.png","gfx/laserpointer-b.png"], 9, "laserpointer", "click", 0, W*2/24,H*12/24-23);
   } else if (W > H && (H < 700 && W < 1200)) { // Tablett
     addObject(["gfx/pumpquelle-off.png","gfx/pumpquelle-on.png"], 1, "pumpsource", "click", 0, W*13/24,H*18/24, 0.6);
@@ -1094,6 +1102,12 @@ window.onload = function() {
   setTimeout(function() {
   // Code, der erst nach 2 Sekunden ausgeführt wird
         autopAlign(false);
+        //turns on the Pump
+        cavity.pump = 1;
+        updateObjectState(1,0);
+        Obj[findObjectInArray("lmedium")].state = 1;
+        drawLayer(2, true);
+        redrawDot();
   }, 500);
 
   if (W<600) {
